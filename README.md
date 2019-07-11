@@ -38,8 +38,7 @@ to predict the sales price
     * Requested API Key
 * Seattle Sold Homes
     * Need to find source
-* Seattle Median Income by Zip Code
-    * Need to find source
+* Seattle Median Income by Zip Code https://www.incomebyzipcode.com/washington/
 
 ### Target:
 
@@ -70,9 +69,12 @@ to predict the sales price
         * 'last_sold_price': '520000'
 * Walk Score
     * 0-100 indexed score
+      * 'walk_score': '87'
+      * 'transit_score': '54'
+      * 'bike_score': '76'
 * Median Income per Zip Code
     * $ USD
-
+      * 'median_income': '102519'
 
 ### Things to consider:
 
