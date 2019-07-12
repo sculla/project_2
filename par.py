@@ -10,10 +10,10 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 from selenium.common.exceptions import WebDriverException
-import chromedriver_binary
+#import chromedriver_binary
 from os import path
 
-def test(test_start=0):
+def test(test_start):
 
     f = open('Region_Names.pickle', 'rb')
     list_of_neighborhoods = pickle.load(f)
@@ -41,15 +41,17 @@ def test(test_start=0):
     # list_of_neighborhoods = neighborhoods.split('\n')
 
     #kill = 1
-    start = 33
+    #start = 26
 
     for i, h_region in enumerate(list_of_neighborhoods):
-        if i < start:
-            print('pass', h_region)
-            continue
-        print(list_of_neighborhoods[i])
-        driver = open_page(i)
+        # if i < start:
+        #     print('pass', h_region)
+        #     continue
+        print(list_of_neighborhoods[test_start-i])
+        driver = open_page(test_start-i)
         actionChain = ActionChains(driver)
+        if i == 1:
+            return 'wtf'
 
         search = driver.find_element_by_id('kcMasterPagePlaceHolder_btnSearch')
         actionChain.click(search).perform()
@@ -62,7 +64,7 @@ def test(test_start=0):
         full_pages = num_pages // 5
         remainder = num_pages % 5
         idx = 0
-        while idx < full_pages:
+        while idx < 2:#full_pages:
             try:
                 soup = bs(driver.page_source, 'html.parser')
                 key = 'kcMasterPagePlaceHolder_gdSalesPagedTransposed'
@@ -105,12 +107,12 @@ def test(test_start=0):
             except WebDriverException:
                 pass
         driver.close()
-        while not path.exists(f'{h_region}.pickle'):
-            time.sleep(.5)
-            f = open(f'{h_region}.pickle', 'wb')
-            pickle.dump(home_df, f)
-            f.close
-        assert path.exists(f'{h_region}.pickle'), f"FAILED TO WRITE {h_region}"
+        while not path.exists(f'{h_region}_{i}_test.pickle'):
+            time.sleep(3)
+            with open(f'{h_region}_{i}_test.pickle', "wb") as f:
+                pickle.dump(home_df, f)
+                f.close
+        print(path.exists(f'{h_region}_{i}_test.pickle'))
 
 
 def open_page(reg_num):
@@ -136,8 +138,8 @@ def open_page(reg_num):
     return driver
 
 if __name__ == '__main__':
-    #from sys import argv as av
-    #test(int(av[1]))
-    test()
+    from sys import argv as av
+    test(int(av[1]))
+
 
 
