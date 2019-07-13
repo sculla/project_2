@@ -15,7 +15,7 @@ from os import path
 
 def test(test_start=0):
 
-    f = open('Region_Names.pickle', 'rb')
+    f = open('.Region_Names.pickle', 'rb')
     list_of_neighborhoods = pickle.load(f)
     f.close()
 
@@ -41,13 +41,18 @@ def test(test_start=0):
     # list_of_neighborhoods = neighborhoods.split('\n')
 
     #kill = 1
-    start = 33
+    start = 21
+    with open('columns.pickle', 'rb') as f:
+        column_list = pickle.load(f)
+        f.close()
 
     for i, h_region in enumerate(list_of_neighborhoods):
         if i < start:
             print('pass', h_region)
             continue
         print(list_of_neighborhoods[i])
+        if i == start+1:
+            return 'done'
         driver = open_page(i)
         actionChain = ActionChains(driver)
 
@@ -58,7 +63,9 @@ def test(test_start=0):
         driver.execute_script("arguments[0].scrollIntoView();", search)
         driver.find_element_by_xpath('//*[@id="kcMasterPagePlaceHolder_btnViewSales"]').click()
 
-        home_df = pd.DataFrame()
+
+        home_df = pd.DataFrame(columns=column_list)
+
         full_pages = num_pages // 5
         remainder = num_pages % 5
         idx = 0
@@ -105,7 +112,7 @@ def test(test_start=0):
             except WebDriverException:
                 pass
         driver.close()
-        while not path.exists(f'{h_region}.pickle'):
+        while path.exists(f'{h_region}.pickle'):
             time.sleep(.5)
             f = open(f'{h_region}.pickle', 'wb')
             pickle.dump(home_df, f)

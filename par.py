@@ -15,7 +15,7 @@ from os import path
 
 def test(test_start):
 
-    f = open('Region_Names.pickle', 'rb')
+    f = open('.Region_Names.pickle', 'rb')
     list_of_neighborhoods = pickle.load(f)
     f.close()
 
@@ -43,15 +43,16 @@ def test(test_start):
     #kill = 1
     #start = 26
 
-    for i, h_region in enumerate(list_of_neighborhoods):
+    for home_idx, h_region in enumerate(list_of_neighborhoods):
         # if i < start:
         #     print('pass', h_region)
         #     continue
-        print(list_of_neighborhoods[test_start-i])
-        driver = open_page(test_start-i)
+        home_name = list_of_neighborhoods[test_start-home_idx]
+        print(home_name)
+        if path.exists(f'{home_name}_{test_start - home_idx}_test.pickle'):
+            continue
+        driver = open_page(test_start-home_idx)
         actionChain = ActionChains(driver)
-        if i == 1:
-            return 'wtf'
 
         search = driver.find_element_by_id('kcMasterPagePlaceHolder_btnSearch')
         actionChain.click(search).perform()
@@ -64,7 +65,7 @@ def test(test_start):
         full_pages = num_pages // 5
         remainder = num_pages % 5
         idx = 0
-        while idx < 2:#full_pages:
+        while idx < full_pages:
             try:
                 soup = bs(driver.page_source, 'html.parser')
                 key = 'kcMasterPagePlaceHolder_gdSalesPagedTransposed'
@@ -107,12 +108,12 @@ def test(test_start):
             except WebDriverException:
                 pass
         driver.close()
-        while not path.exists(f'{h_region}_{i}_test.pickle'):
+        while not path.exists(f'{home_name}_{test_start-home_idx}_test.pickle'):
             time.sleep(3)
-            with open(f'{h_region}_{i}_test.pickle', "wb") as f:
+            with open(f'{home_name}_{test_start-home_idx}_test.pickle', "wb") as f:
                 pickle.dump(home_df, f)
                 f.close
-        print(path.exists(f'{h_region}_{i}_test.pickle'))
+        print(path.exists(f'{home_name}_{test_start-home_idx}_test.pickle'))
 
 
 def open_page(reg_num):
