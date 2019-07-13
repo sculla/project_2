@@ -29,7 +29,7 @@ def percent_compl(val):
 
 if __name__ == '__main__':
 
-    new_df = pd.read_pickle('full_list.pickle')
+    new_df = pd.read_pickle('pickle/full_list.pickle')
     new_df.reset_index(inplace=True)
     new_df.drop('index',inplace=True, axis=1)
     new_df.drop_duplicates(['Parcel'], inplace=True)
@@ -59,6 +59,7 @@ if __name__ == '__main__':
     for col in ['Environmental','Nuisances','Topography']:
        new_df[col] = new_df[col].apply(is_yes_to_numaric)
     new_df['Percentage complete'] = new_df['Percentage complete'].apply(percent_compl)
+    new_df['Percentage complete'] = new_df[new_df['Percentage complete'] == 100]
     test_df = new_df[['Sale price',
            'Assessed Value',
            'Building grade', 'Building condition',
@@ -68,5 +69,5 @@ if __name__ == '__main__':
            'Sq ft lot',
            'Topography', 'Environmental', 'Nuisances',
            'Building Age']]
-    test_df.to_pickle('2018_house_data_frame.pickle')
-    assert path.exists('2018_house_data_frame.pickle'), 'failed to write pickle'
+    test_df.to_pickle('data/.2018_house_data_frame.pickle')
+    assert path.exists('data/.2018_house_data_frame.pickle'), 'failed to write pickle'

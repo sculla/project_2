@@ -4,10 +4,10 @@ if __name__ == '__main__':
     import pickle
     import pandas as pd
 
-    with open('columns.pickle','rb') as f:
+    with open('pickle/columns.pickle','rb') as f:
         column_list = pickle.load(f)
         f.close()
-    with open('pickle_list.pickle','rb') as f:
+    with open('pickle/pickle_list.pickle','rb') as f:
         name_list = pickle.load(f)
         f.close()
 
@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     for name in name_list:
         print(name, 'next')
-        new_df = pd.read_pickle(name)
+        new_df = pd.read_pickle('pickle/'+name)
         if new_df.shape == (0, 0):
             continue
 
@@ -26,5 +26,5 @@ if __name__ == '__main__':
         print(homes_df.shape)
     print(homes_df.shape)
 
-    homes_df.to_pickle('full_list.pickle')
+    homes_df.to_pickle('data/full_list.pickle')
     print('wheeeeeeeeeee its in!')
