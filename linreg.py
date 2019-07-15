@@ -1,7 +1,5 @@
 
-#64 = .834
-#84 = .839
-#38 = .868
+#81 = 925
 
 import pandas as pd
 from sklearn.model_selection import train_test_split

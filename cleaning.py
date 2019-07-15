@@ -79,9 +79,9 @@ if __name__ == '__main__':
 
     # Dropping $0-100,000 sale price == QUIT CLAIM DEED; RELATED PARTY, FRIEND, OR NEI...
     test_df = test_df[test_df['Sale_price'] > 1e5]
-    test_df = test_df[test_df['Assessed_Value'] != 0]
+    test_df = test_df[test_df['Assessed_Value'] > 100000]
 
-
+    test_df = test_df[test_df['Building_Age'] >= 1]
     # final index fixing
     test_df.reset_index(inplace=True)
     test_df.drop(['index'], axis=1, inplace=True)
