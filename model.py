@@ -79,13 +79,12 @@ if __name__ == '__main__':
 
     test_set_pred = lasso_model.predict(X_val_scaled)
     resid = test_set_pred - y_val
-    plt.style.use('dark_background')
-    plt.fig
-    plt.scatter(np.arange(len(resid))[20:], resid[20:], alpha=.1, color='#33C2FF')
+    sns.scatterplot(np.arange(len(resid))[20:], resid[20:], alpha=.1, color='#33C2FF')
     plt.title('Residuals of CV Lasso Model \u03BB:100', color='w')
-    plt.ylabel('Y\u209A - Y :Residual', color='w', fontdict='A')
+    plt.ylabel('Y_p - Y :Residual', color='w')
     plt.xlabel('Observations R^2 Score: {}'.format(round(r2_score(y_val, test_set_pred),3)),color='w')
-    plt.tight_layout()
     plt.xticks(color='w')
     plt.yticks(color='w')
-    plt.savefig('images/Lasso_Residual.svg',transparent=True,bbox_inches='tight')
+    plt.tight_layout()
+    plt.savefig('images/Lasso_Residual.svg',transparent=True)
+
