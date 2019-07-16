@@ -69,8 +69,7 @@ if __name__ == '__main__':
     new_df['BC^2'] = new_df['Building condition'].apply(lambda x: x ** 2)
 
     test_col = ['Sale price', 'Assessed Value', 'BG^2', 'BC^2',
-                'Stories', 'Living units', 'Above grade living area', 'Below grade living area',
-                'Total basement', 'Finished basement', 'Sq ft lot',
+                'Stories', 'Living units', 'Above grade living area','Sq ft lot',
                 'Topography', 'Environmental', 'Nuisances', 'Building Age']
     col_names = [x.replace(' ', '_') for x in test_col]
     new_names = dict(zip(test_col, col_names))
@@ -82,6 +81,10 @@ if __name__ == '__main__':
     test_df = test_df[test_df['Assessed_Value'] > 100000]
 
     test_df = test_df[test_df['Building_Age'] >= 1]
+
+    test_df = test_df[test_df['Sq_ft_lot'] < 200000]
+    test_df['Assessed_Value'] = np.log(test_df['Assessed_Value'])
+    test_df['Sale_price'] = np.log(test_df['Sale_price'])
     # final index fixing
     test_df.reset_index(inplace=True)
     test_df.drop(['index'], axis=1, inplace=True)
