@@ -4,12 +4,14 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.ticker import NullFormatter, LogLocator, FixedLocator
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, Lasso, LassoCV, Ridge, RidgeCV
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
+
 import matplotlib
 
 
@@ -24,10 +26,18 @@ def mse(y_true, y_pred):
 train_val_test = ['X_tr', 'X_val', 'X_test', 'y_tr', 'y_val', 'y_test']
 k = 81
 
+
+
 for na in train_val_test:
     with open(f'data/{na}.{k}.pickle', 'rb') as f:
         globals()[na] = pickle.load(f)
 
+x_fix = ['X_tr', 'X_val', 'X_test']
+for nam in x_fix:
+    globals()[nam]['Assessed_Value'] = np.log(globals()[nam]['Assessed_Value'])
+
+y_tr = np.log(y_tr)
+y_val = np.log(y_val)
 scaler = StandardScaler()
 
 X_scaled = scaler.fit_transform(X_tr.values)
@@ -59,52 +69,77 @@ print('The best value for test \u03BB in a Lasso is {}'.format(alphalist[np.argm
 #Lasso CV
 alphavec = 10 ** np.linspace(-2, 2, 200)
 
-lasso_model = LassoCV(alphas=alphavec, cv=5, tol=.00001, max_iter=500)
+lasso_model = LassoCV(alphas=alphavec, cv=50, tol=.000000000001, max_iter=5000)
 lasso_model.fit(X_scaled, y_tr)
 print('The best value for CV \u03BB in a Lasso is {}, and CV == test: {}'.format(lasso_model.alpha_, lasso_model.alpha_ == alphalist[np.argmin(err_vec_val)]))
 
 # Scaled Coefficients
-# [('Assessed_Value', 642530.2972543074),
-#  ('BG^2', -14357.300046032118),
-#  ('BC^2', -5186.510696270045),
-#  ('Stories', -2429.167857371234),
-#  ('Living_units', 15981.988512924796),
-#  ('Above_grade_living_area', -22421.49345814874),
-#  ('Below_grade_living_area', -7575.529280712608),
-#  ('Total_basement', 6394.6453378824635),
-#  ('Finished_basement', -5218.793270781661),
-#  ('Sq_ft_lot', 16080.982407121579),
-#  ('Topography', -901.792153504179),
-#  ('Environmental', -421.4572205665248),
-#  ('Nuisances', -4003.3215791324296),
-#  ('Building_Age', 8297.759457703842)]
+# [('Assessed_Value', 642090.3065471586),
+#  ('BG^2', -14207.056660080996),
+#  ('BC^2', -5208.552177667601),
+#  ('Stories', -2235.653642116267),
+#  ('Living_units', 15946.370330110187),
+#  ('Above_grade_living_area', -22222.477622288512),
+#  ('Below_grade_living_area', -7434.095015982243),
+#  ('Total_basement', 6336.554021618317),
+#  ('Finished_basement', -5169.566954538874),
+#  ('Sq_ft_lot', 16062.115665920513),
+#  ('Topography', -893.3418014063818),
+#  ('Environmental', -419.54935799268833),
+#  ('Nuisances', -4001.854694924439),
+#  ('Building_Age', 8516.435194134543)]
 
-test_set_pred = lasso_model.predict(X_val_scaled)
-resid = y_val - test_set_pred
+val_predicted = lasso_model.predict(X_val_scaled)
+resid = y_val - val_predicted
 
-#CV Lasso Model Graph
-f, ax = plt.subplots()
+def build_lasso_graph(resid=resid, val_pred_internal=val_predicted, y_val=y_val, name='test'):
+    #CV Lasso Model Graph
+    f, ax = plt.subplots()
 
-ax.scatter(test_set_pred, resid, alpha=.2, color='#33C2FF')
-from matplotlib.ticker import NullFormatter, LogLocator, FixedLocator
-ax.set_title('Residuals of CV Lasso Model \u03BB:100, R^2 Score: {}'.format(round(r2_score(y_val, test_set_pred),3)), fontsize=14, color='w')
-ax.set_ylim(resid.std()*-3.1, resid.std()*3.1)
-ax.set_ylabel('y - \u0177: Residual', color='w', fontsize=14)
-ax.set_xlabel('Test Set Prediction', color='w', fontsize=14)
-ax.set_yscale('linear')
-ax.tick_params(axis='x', colors='white')
-ax.tick_params(axis='y', colors='white')
-ax.set_xscale('log')
-locmin = LogLocator(base=10.0, subs='auto')
-ax.xaxis.set_minor_locator(locmin)
-ax.xaxis.set_minor_formatter(NullFormatter())
-locmaj = LogLocator(base=10.0, subs='auto')
-ax.xaxis.set_major_locator(locmaj)
-resid_std = [resid.std() * x for x in [-3,-2,-1,0,1,2,3]]
-ax.yaxis.set_major_locator(FixedLocator(resid_std))
-ylab = '-3\u03C3 -2\u03C3 -1\u03C3 x\u0305 1\u03C3 2\u03C3 3\u03C3'.split()
-ax.set_yticklabels(ylab)
-ax.set_xticks(list(plt.xticks()[0])+[1e6]+[8e5])
-ax.set_xlim(np.min(test_set_pred), np.max(test_set_pred))
-plt.tight_layout()
-plt.savefig('images/Lasso_Residual.svg', transparent=True)
+    ax.scatter(val_pred_internal, resid, alpha=.2, color='#33C2FF')
+
+    ax.set_title('Residuals of CV Lasso Model \u03BB:{}, R^2 Score: {}'.format(lasso_model.alpha_,round(r2_score(y_val, val_pred_internal), 3)), fontsize=14, color='w')
+    # ax.set_ylim(resid.std()*-3, resid.std()*3)
+    ax.set_ylabel(f'y - \u0177 Residual: \u0305x :{resid.mean():.2f}, \u03C3:{resid.std():.2f}', color='w', fontsize=12)
+    ax.set_xlabel('Test Set Prediction', color='w', fontsize=14)
+    ax.set_yscale('linear')
+    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='y', colors='white')
+    ax.set_xscale('linear')
+    # locmin = LogLocator(base=10.0, subs='auto')
+    # ax.xaxis.set_minor_locator(locmin)
+    # ax.xaxis.set_minor_formatter(NullFormatter())
+    # locmaj = LogLocator(base=10.0, subs='auto')
+    # ax.xaxis.set_major_locator(locmaj)
+    # resid_std = [resid.std() * x for x in [-4,-3,-2,-1,0,1,2,3,4]]
+    # ax.yaxis.set_major_locator(FixedLocator(resid_std))
+    # ylab = '-4\u03C3 -3\u03C3 -2\u03C3 -1\u03C3 0 1\u03C3 2\u03C3 3\u03C3 4\u03C3'.split()
+    # ax.set_yticklabels(ylab)
+    # ax.set_xticks(list(plt.xticks()[0])+[1e6]+[8e5])
+    ax.set_xlim(np.min(val_pred_internal), np.max(val_pred_internal))
+    plt.tight_layout()
+    plt.savefig(f'images/Lasso_Residual.{name}.svg', transparent=True)
+
+def lasso_path(name='test'):
+    from sklearn.linear_model import lars_path
+    print("Computing regularization path using the LARS ...")
+    alphas, _, coefs = lars_path(X_scaled, y_tr.values, method='lasso')
+    xx = np.sum(np.abs(coefs.T), axis=1)
+    xx /= xx[-1]
+    plt.figure(figsize=(10, 10))
+    plt.plot(xx, coefs.T)
+    ymin, ymax = plt.ylim()
+    plt.vlines(xx, ymin, ymax, linestyle='dashed', colors='grey')
+    plt.xlabel('|coef| / max|coef|', color='w')
+    plt.ylabel('Coefficients', color='w')
+    plt.title('LASSO Path')
+    plt.axis('tight')
+    plt.legend(X_tr.columns)
+    plt.yticks(c='w')
+    plt.xticks(c='w')
+    plt.tight_layout()
+    plt.savefig(f'images/Lasso_Path{name}.svg', transparent=True)
+
+if __name__ == '__main__':
+    build_lasso_graph()
+    lasso_path()
