@@ -72,13 +72,21 @@ if __name__ == '__main__':
     new_df.drop('index', inplace=True, axis=1)
     new_df.drop_duplicates(['Parcel'], inplace=True)
     conditions = {'Average': 3, 'Very Good': 5, 'Good': 4, 'Fair': 2, 'Poor': 1}
+    v_scale2 = {'AVERAGE': 3, 'VERY GOOD': 5, 'GOOD': 4, 'FAIR': 2, 'POOR': 1, 'EXCELLENT': 6, ' ': 0, np.nan:0}
+    views = ['Lake Washington','Puget Sound', 'Lake Sammamish', 'Small Lake/River','Seattle Skyline',
+             'Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.', 'Other view']
+
 
     for col in new_df.columns:
         new_df[col].replace({'': np.nan}, inplace=True)
         new_df[col].replace({' ': np.nan}, inplace=True)
+    for view in views:
+        new_df[view] = new_df[view].replace(v_scale2)
+        new_df[view] = new_df[view].astype('int8')
+
     print('here')
     new_df = new_df[(new_df['Parcel'] != np.nan)]
-    new_df['Views'] = new_df['Views'].apply(is_yes_no)
+    # new_df['Views'] = new_df['Views'].apply(is_yes_no)
     for idx_to_int in ['Sale price', 'Adjusted sale price', 'Assessed Value',
                        'Year built / renovated', 'Stories', 'Living units',
                        'Above grade living area', 'Total living area', 'Total basement',
@@ -135,7 +143,9 @@ if __name__ == '__main__':
                 'Stories', 'Above grade living area',
                 'Sq ft lot', 'Building Age',
                 'Environmental', 'Nuisances', 'Topography', 'Waterfront footage',
-                'Views']
+                'Lake Washington','Puget Sound', 'Lake Sammamish', 'Small Lake/River',
+                'Seattle Skyline','Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.',
+                'Other view']
     col_names = [x.replace(' ', '_') for x in test_col]
     new_names = dict(zip(test_col, col_names))
     test_df = new_df[test_col]
