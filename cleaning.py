@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     ## append other to unique homes
     new_df['Waterfront footage'] = new_df['Waterfront footage'].astype('int8')
-    new_df['Waterfront footage'] = new_df['Waterfront footage'].apply(less_zero)
+    #new_df['Waterfront footage'] = new_df['Waterfront footage'].apply(less_zero)
 
 
     # unique_homes = pd.concat([unique_homes, pd.get_dummies(unique_homes[['Lake Washington',
@@ -145,7 +145,7 @@ if __name__ == '__main__':
                 'Environmental', 'Nuisances', 'Topography', 'Waterfront footage',
                 'Lake Washington','Puget Sound', 'Lake Sammamish', 'Small Lake/River',
                 'Seattle Skyline','Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.',
-                'Other view']
+                'Other view', 'Address']
     col_names = [x.replace(' ', '_') for x in test_col]
     new_names = dict(zip(test_col, col_names))
     test_df = new_df[test_col]
@@ -166,6 +166,8 @@ if __name__ == '__main__':
     test_df['Building_Age'] = 1/test_df['Building_Age']
 
     # final index fixing
+    w_add = test_df.copy()
+    test_df.drop(['Address'], axis=1, inplace=True)
     test_df.reset_index(inplace=True)
     test_df.drop(['index'], axis=1, inplace=True)
     test_df.to_pickle('data/.2018_house_data_frame.pickle')

@@ -4,7 +4,7 @@
 #(0.7723763538844225, 6) ALL OTHER
 #[0.4115104767372036, 3] UNIQUE
 
-#if __name__ == '__main__':
+
 
 import pandas as pd
 import pickle
@@ -212,3 +212,6 @@ def run_tests(row=''):
 # array([ 5.31173640e-01,  0.00000000e+00,  5.23008728e-03, -3.89297864e-03,
 #        -8.28017062e-03,  0.00000000e+00, -1.96824877e-04,  4.45692812e-03,
 #        -3.31845791e-03,  1.86866576e-03,  5.33125490e-03,  1.01193376e-03])
+
+if __name__ == '__main__':
+    lasso_model, ridge_model, X_test_scaled, y_test = run_tests()
