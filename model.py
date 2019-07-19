@@ -24,17 +24,17 @@ import matplotlib
 sns.set_style('darkgrid')
 
 def rat_test(col, val, model):
-    X, y = homes.drop(['Sale_price'], axis=1), homes['Sale_price']
+    X, y = homes.drop(['Sale_price', 'Address'], axis=1), homes['Sale_price']
     x2 = X.copy()
     x2[col] = 0
     x3 = X.copy()
     x3[col] = val
-    thing2 = np.median(model.predict(scaler.transform(x2.values)))
-    thing3 = np.median(model.predict(scaler.transform(x3.values)))
+    thing2 = np.median(model.predict(x2.values))
+    thing3 = np.median(model.predict(x3.values))
     return (np.exp(thing3 - thing2) - 1) * 100
 
-def mse(y_true, y_pred):
-    return np.mean((y_pred - y_true) ** 2)
+# def mse(y_true, y_pred):
+#     return np.mean((y_pred - y_true) ** 2)
 
 def build_graph(resid, val_pred_internal, y_val, mod, name='test', model_name='N/A'):
     #CV Lasso Model Graph
@@ -44,8 +44,8 @@ def build_graph(resid, val_pred_internal, y_val, mod, name='test', model_name='N
 
     ax.set_title('Residuals of CV {} Model \u03BB:{:2f}, R^2 Score: {}'.format(model_name, mod.alpha_,round(r2_score(y_val, val_pred_internal), 3)), fontsize=14, color='w')
     # ax.set_ylim(resid.std()*-3, resid.std()*3)
-    ax.set_ylabel(f'y - \u0177 Residual: \u0305x :{resid.mean():.2f}, \u03C3:{resid.std():.2f}', color='w', fontsize=12)
-    ax.set_xlabel('Test Set Prediction', color='w', fontsize=14)
+    ax.set_ylabel(f'ln(y) - ln(\u0177) Residual: \u0305x :{resid.mean():.2f}, \u03C3:{resid.std():.2f}', color='w', fontsize=12)
+    ax.set_xlabel('ln(y): Test Set Sales Price', color='w', fontsize=14)
     ax.set_yscale('linear')
     ax.tick_params(axis='x', colors='white')
     ax.tick_params(axis='y', colors='white')
@@ -64,7 +64,7 @@ def build_graph(resid, val_pred_internal, y_val, mod, name='test', model_name='N
     plt.tight_layout()
     plt.savefig(f'images/{model_name}_Residual.{name}.svg', transparent=True)
 
-def lasso_path(name='test'):
+def lasso_path( X_scaled, y_tr, columns, name='test',):
     from sklearn.linear_model import lars_path
     print("Computing regularization path using the LARS ...")
     alphas, _, coefs = lars_path(X_scaled, y_tr.values, method='lasso')
@@ -78,11 +78,11 @@ def lasso_path(name='test'):
     plt.ylabel('Coefficients', color='w')
     plt.title('LASSO Path')
     plt.axis('tight')
-    plt.legend(X_tr.columns)
+    plt.legend(columns)
     plt.yticks(c='w')
     plt.xticks(c='w')
     plt.tight_layout()
-    plt.savefig(f'images/Lasso_Path{name}.svg', transparent=True)
+    plt.savefig(f'images/Lasso_Path.{name}.svg', transparent=True)
 
 
 # train_val_test = ['X_tr', 'X_val', 'X_test', 'y_tr', 'y_val', 'y_test']
@@ -136,17 +136,27 @@ results = dict()
 
 def run_tests(row=''):
 
-    drop_list = ['Sale_price']
-    if row:
-        drop_list.append(row)
+    # drop_list = ['Sale_price']
+    # if row:
+    #     drop_list.append(row)
 
     X, y = homes.drop(['Sale_price'], axis=1), homes['Sale_price']
 
-    X_tr, X_val_test, y_tr, y_val_test = train_test_split(X, y, test_size=.25)
-    X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=.5)
-    X_scaled = scaler.fit_transform(X_tr.values)
-    X_val_scaled = scaler.transform(X_val.values)
-    X_test_scaled = scaler.transform(X_test.values)
+    #CV set
+
+    X_tr, X_test, y_tr, y_test = train_test_split(X, y, test_size=.2)
+
+    #pulling addresses
+
+    X_tr, X_test, Addresses = X_tr.drop(['Address'], axis=1), X_test.drop(['Address'], axis=1), X_test['Address']
+
+
+    #single run set
+    # X_tr, X_val_test, y_tr, y_val_test = train_test_split(X, y, test_size=.25)
+    # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=.5)
+    X_scaled = X_tr #scaler.fit_transform(X_tr.values)
+    # X_val_scaled = scaler.transform(X_val.values)
+    X_test_scaled = X_test #scaler.transform(X_test.values)
 
     alphavec = 10 ** np.linspace(-5, 1, 200)
 
@@ -154,10 +164,10 @@ def run_tests(row=''):
     lasso_model.fit(X_scaled, y_tr)
     print('The best value for CV \u03BB in a Lasso is {}, and CV == test: ??'.format(lasso_model.alpha_))
 
-    val_predicted = lasso_model.predict(X_val_scaled)
-    resid = y_val - val_predicted
+    test_predicted = lasso_model.predict(X_test)
+    resid = y_test - test_predicted
 
-    build_graph(name= row, resid=resid, val_pred_internal=val_predicted, y_val=y_val, model_name='Lasso',mod=lasso_model)
+    build_graph(name= row, resid=resid, val_pred_internal=test_predicted, y_val=y_test, model_name='Lasso',mod=lasso_model)
 
     #Ridge Test
     # alphalist = 10 ** (np.linspace(0, 5, 200))
@@ -185,15 +195,16 @@ def run_tests(row=''):
     ridge_model.fit(X_scaled, y_tr)
     print('The best value for CV \u03BB in a Ridge is {}, and CV == test: ??'.format(ridge_model.alpha_))
 
-    val_predicted = ridge_model.predict(X_val_scaled)
-    resid = y_val - val_predicted
+    test_predicted = ridge_model.predict(X_test_scaled)
+    resid = y_test - test_predicted
 
-    build_graph(name= row, resid=resid, val_pred_internal=val_predicted, y_val=y_val, model_name='Ridge',mod=ridge_model)
+    build_graph(name= row, resid=resid, val_pred_internal=test_predicted, y_val=y_test, model_name='Ridge',mod=ridge_model)
 
     results[row] = [ridge_model.score(X_test_scaled,y_test), ridge_model.alpha_,
                     lasso_model.score(X_test_scaled,y_test), lasso_model.alpha_]
     print(results)
-    return lasso_model, ridge_model, X_test_scaled, y_test
+    #lasso_path(X_scaled, y_tr, X_test.columns, 'slide')
+    return lasso_model, ridge_model, X_test_scaled, y_test, Addresses
 # for x in ['Assessed_Value', 'BG^2', 'BC^2', 'Stories', 'Above_grade_living_area',
 #        'Sq_ft_lot', 'Building_Age', 'Environmental', 'Nuisances', 'Topography',
 #        'Waterfront_footage', 'Views']:
@@ -214,4 +225,19 @@ def run_tests(row=''):
 #        -3.31845791e-03,  1.86866576e-03,  5.33125490e-03,  1.01193376e-03])
 
 if __name__ == '__main__':
-    lasso_model, ridge_model, X_test_scaled, y_test = run_tests()
+    lasso_model, ridge_model, X_test_scaled, y_test, Addresses = run_tests()
+    import numpy as np
+    import pandas as pd
+
+    err = np.exp(ridge_model.predict(X_test_scaled))
+    err = ridge_model.predict(X_test_scaled) - y_test
+    err_add = list(zip(err, Addresses))
+
+    err_df = pd.DataFrame(err_add)
+    err_df1 = err_df[err_df[0] > -.01]
+    err_df2 = err_df1[(err_df1[0] < .01)]
+    print(err_df2.shape)
+
+    err_df1 = err_df[err_df[0] > -.1]
+    err_df2 = err_df1[(err_df1[0] < .1)]
+    print(err_df2.shape)

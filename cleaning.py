@@ -133,11 +133,15 @@ if __name__ == '__main__':
     #                                                    'Other view']])], axis=1)
 
 
+    #zillow calls:
+
+    #zcols = ['bathrooms', 'bedrooms', 'year_updated', 'num_rooms', 'school_district']
+
     ## drop unique homes
     # new_df = new_df[new_df['Waterfront footage'] == 0]
     # new_df = new_df[new_df['Views'] != 'Yes']
     # new_df = new_df[new_df['Sale price'] < 1e6]
-
+    #new_df = new_df[-new_df.Address.str.endswith(' ')]
     #making test df
     test_col = ['Sale price', 'Assessed Value', 'BG^2', 'BC^2',
                 'Stories', 'Above grade living area',
@@ -167,7 +171,7 @@ if __name__ == '__main__':
 
     # final index fixing
     w_add = test_df.copy()
-    test_df.drop(['Address'], axis=1, inplace=True)
+    #test_df.drop(['Address'], axis=1, inplace=True)
     test_df.reset_index(inplace=True)
     test_df.drop(['index'], axis=1, inplace=True)
     test_df.to_pickle('data/.2018_house_data_frame.pickle')
