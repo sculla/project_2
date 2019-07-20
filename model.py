@@ -139,8 +139,8 @@ def run_tests(row=''):
     # drop_list = ['Sale_price']
     # if row:
     #     drop_list.append(row)
-
     X, y = homes.drop(['Sale_price'], axis=1), homes['Sale_price']
+    # X, y = homes['Assessed_Value'], homes['Sale_price']
 
     #CV set
 
@@ -154,9 +154,9 @@ def run_tests(row=''):
     #single run set
     # X_tr, X_val_test, y_tr, y_val_test = train_test_split(X, y, test_size=.25)
     # X_val, X_test, y_val, y_test = train_test_split(X_val_test, y_val_test, test_size=.5)
-    X_scaled = X_tr #scaler.fit_transform(X_tr.values)
+    X_scaled = scaler.fit_transform(X_tr.values)
     # X_val_scaled = scaler.transform(X_val.values)
-    X_test_scaled = X_test #scaler.transform(X_test.values)
+    X_test_scaled = scaler.transform(X_test.values)
 
     alphavec = 10 ** np.linspace(-5, 1, 200)
 
