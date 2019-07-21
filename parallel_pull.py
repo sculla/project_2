@@ -1,17 +1,16 @@
 
 #! /anaconda3/envs/metis/bin/ python
 
-import requests
-import time
 import pickle
+import time
+from os import path
+
 import pandas as pd
 from bs4 import BeautifulSoup as bs
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver import ActionChains
 from selenium.common.exceptions import WebDriverException
-#import chromedriver_binary
-from os import path
+from selenium.webdriver import ActionChains
+
 
 def test(test_start):
 

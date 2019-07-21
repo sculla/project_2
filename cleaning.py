@@ -10,7 +10,6 @@ import pandas as pd
 # pd.set_option('display.precision', 3)
 
 
-
 def get_num(val):
     if val.lower == 'nan':
         return np.nan
@@ -32,15 +31,18 @@ def percent_compl(val):
         return 100
     return val
 
+
 def is_yes_no(val):
     if val.lower() == 'yes':
         return 1
     return 0
 
+
 def less_zero(val):
     if val <= 0:
         return 1
     return 0
+
 
 # import dotenv
 # apiKey = dotenv.get_key('.env','apiKey')
@@ -71,11 +73,10 @@ if __name__ == '__main__':
     new_df.reset_index(inplace=True)
     new_df.drop('index', inplace=True, axis=1)
     new_df.drop_duplicates(['Parcel'], inplace=True)
-    conditions = {'Average': 3, 'Very Good': 5, 'Good': 4, 'Fair': 2, 'Poor': 1}
-    v_scale2 = {'AVERAGE': 3, 'VERY GOOD': 5, 'GOOD': 4, 'FAIR': 2, 'POOR': 1, 'EXCELLENT': 6, ' ': 0, np.nan:0}
-    views = ['Lake Washington','Puget Sound', 'Lake Sammamish', 'Small Lake/River','Seattle Skyline',
-             'Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.', 'Other view']
 
+    v_scale2 = {'AVERAGE': 3, 'VERY GOOD': 5, 'GOOD': 4, 'FAIR': 2, 'POOR': 1, 'EXCELLENT': 6, ' ': 0, np.nan: 0}
+    views = ['Lake Washington', 'Puget Sound', 'Lake Sammamish', 'Small Lake/River', 'Seattle Skyline',
+             'Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.', 'Other view']
 
     for col in new_df.columns:
         new_df[col].replace({'': np.nan}, inplace=True)
@@ -84,7 +85,7 @@ if __name__ == '__main__':
         new_df[view] = new_df[view].replace(v_scale2)
         new_df[view] = new_df[view].astype('int8')
 
-    print('here')
+    print('Loaded Data, Transforming... Beep-Boop')
     new_df = new_df[(new_df['Parcel'] != np.nan)]
     # new_df['Views'] = new_df['Views'].apply(is_yes_no)
     for idx_to_int in ['Sale price', 'Adjusted sale price', 'Assessed Value',
@@ -95,14 +96,21 @@ if __name__ == '__main__':
     new_df.drop(['Picture', 'Excise tax number', 'Sales warning'], axis=1, inplace=True)
     new_df['Year built / renovated'] = new_df['Year built / renovated'].astype('int32')
     new_df['Building grade'] = new_df['Building grade'].astype('str')
-    # Paul allan's house was sold.. cant
+
+    # Paul allan's house was sold.. i just cant...
     new_df = new_df[new_df['Building grade'] != 'Exceptional Properties']
+
     new_df['Building grade'] = new_df['Building grade'].apply(get_num)
+
     # dropped mobiles
     new_df = new_df[new_df['Mobile home'] == '\xa0']
+
     # vacant lots
     new_df = new_df[new_df['Building grade'] > 0]
+
+    conditions = {'Average': 3, 'Very Good': 5, 'Good': 4, 'Fair': 2, 'Poor': 1}
     new_df['Building condition'] = new_df['Building condition'].replace(conditions)
+
     new_df['Building Age'] = new_df['Year built / renovated'].apply(lambda x: 2018 - x)
     new_df['Waterfront footage'] = new_df['Waterfront footage'].astype('int8')
 
@@ -113,67 +121,49 @@ if __name__ == '__main__':
 
     new_df['BG^2'] = new_df['Building grade'].apply(lambda x: x ** 2)
     new_df['BC^2'] = new_df['Building condition'].apply(lambda x: x ** 2)
-    # new_df = pd.concat([new_df, pd.get_dummies(new_df[['Lake Washington',
-    #                                                    'Puget Sound', 'Lake Sammamish', 'Small Lake/River',
-    #                                                    'Seattle Skyline',
-    #                                                    'Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.',
-    #                                                    'Other view']])], axis=1)
     new_df = new_df[new_df['Present use'] == 'Single Family(Res Use/Zone)']
-
-
-    ## append other to unique homes
     new_df['Waterfront footage'] = new_df['Waterfront footage'].astype('int8')
-    #new_df['Waterfront footage'] = new_df['Waterfront footage'].apply(less_zero)
 
 
-    # unique_homes = pd.concat([unique_homes, pd.get_dummies(unique_homes[['Lake Washington',
-    #                                                    'Puget Sound', 'Lake Sammamish', 'Small Lake/River',
-    #                                                    'Seattle Skyline',
-    #                                                    'Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.',
-    #                                                    'Other view']])], axis=1)
+    # zillow calls:
 
+    #TODO add zillow function to add these features from feature_eng.py
+    # df add empty columns to assist the data gathering
+    # want zcols = ['bathrooms', 'bedrooms', 'year_updated', 'num_rooms', 'school_district']
+    # for adddress in addresses > zillow api > get columns below
+    # replace thing with new data
 
-    #zillow calls:
-
-    #zcols = ['bathrooms', 'bedrooms', 'year_updated', 'num_rooms', 'school_district']
-
-    ## drop unique homes
-    # new_df = new_df[new_df['Waterfront footage'] == 0]
-    # new_df = new_df[new_df['Views'] != 'Yes']
-    # new_df = new_df[new_df['Sale price'] < 1e6]
-    #new_df = new_df[-new_df.Address.str.endswith(' ')]
-    #making test df
+    # making test data df
     test_col = ['Sale price', 'Assessed Value', 'BG^2', 'BC^2',
                 'Stories', 'Above grade living area',
                 'Sq ft lot', 'Building Age',
                 'Environmental', 'Nuisances', 'Topography', 'Waterfront footage',
-                'Lake Washington','Puget Sound', 'Lake Sammamish', 'Small Lake/River',
-                'Seattle Skyline','Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.',
+                'Lake Washington', 'Puget Sound', 'Lake Sammamish', 'Small Lake/River',
+                'Seattle Skyline', 'Mt. Rainier', 'Olympics Mt.', 'Cascades Mt.',
                 'Other view', 'Address']
     col_names = [x.replace(' ', '_') for x in test_col]
     new_names = dict(zip(test_col, col_names))
     test_df = new_df[test_col]
     test_df = test_df.rename(new_names, axis=1)
 
-
     # Dropping $0-100,000 sale price == QUIT CLAIM DEED; RELATED PARTY, FRIEND, OR NEI...
     test_df = test_df[test_df['Sale_price'] > 1e5]
     test_df = test_df[test_df['Assessed_Value'] > 100000]
     test_df = test_df[test_df['Building_Age'] >= 1]
 
-    #log transform
+    # log transform
     test_df['Sq_ft_lot'] = np.log(test_df['Sq_ft_lot'])
     test_df['Assessed_Value'] = np.log(test_df['Assessed_Value'])
     test_df['Sale_price'] = np.log(test_df['Sale_price'])
 
-    #1/x
-    test_df['Building_Age'] = 1/test_df['Building_Age']
+    # 1/x
+    test_df['Building_Age'] = 1 / test_df['Building_Age']
 
     # final index fixing
-    w_add = test_df.copy()
-    #test_df.drop(['Address'], axis=1, inplace=True)
     test_df.reset_index(inplace=True)
     test_df.drop(['index'], axis=1, inplace=True)
     test_df.to_pickle('data/.2018_house_data_frame.pickle')
     assert path.exists('data/.2018_house_data_frame.pickle'), 'failed to write pickle'
-
+    print(f'The data is in a pickle... Beep-Boop\n'
+          f'Copy the path below if you know whats good for you...\n\n'
+          f'data/.2018_house_data_frame.pickle')
