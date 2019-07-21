@@ -50,12 +50,12 @@ def open_page(reg_num, sdate, edate):
     return driver
 
 
-def test(reg_start, reg_end, s_date, e_date):
+def scrape(reg_start, reg_end, s_date, e_date):
     """
     Main Scraper function for the king county sale search.
     default starts at region 1, and goes through the whole list
     in practice, you can open many instances of this function to scrape
-    multiple pages at once via start and end.
+    multiple pages at once via reg_start and reg_end.
 
     TODO: implement class
     :param reg_start: number of the region
@@ -65,10 +65,10 @@ def test(reg_start, reg_end, s_date, e_date):
     :return: None
     """
 
-    with open('.Region_Names.pickle', 'rb') as f:
+    with open('data/.Region_Names.pickle', 'rb') as f:
         list_of_neighborhoods = pickle.load(f)
 
-    with open('columns.pickle', 'rb') as f:
+    with open('pickle/columns.pickle', 'rb') as f:
         column_list = pickle.load(f)
 
     for i, h_region in enumerate(list_of_neighborhoods):
@@ -78,7 +78,7 @@ def test(reg_start, reg_end, s_date, e_date):
             continue
         if i == reg_end:
             return 'Finished'
-        if path.exists(f'{h_region}.pickle'):  # catch if already scraped
+        if path.exists(f'pickle/{h_region}.pickle'):  # catch if already scraped
             continue
 
         print(f'Starting {list_of_neighborhoods[i]}')
@@ -143,13 +143,13 @@ def test(reg_start, reg_end, s_date, e_date):
 
         driver.close()
 
-        if not path.exists(f'{h_region}.pickle'):
+        if not path.exists(f'pickle/{h_region}.pickle'):
             time.sleep(.5)
-            with open(f'{h_region}.pickle', 'wb') as f:
+            with open(f'pickle/{h_region}.pickle', 'wb') as f:
                 pickle.dump(home_df, f)
-        assert path.exists(f'{h_region}.pickle'), f"FAILED TO WRITE {h_region}"
+        assert path.exists(f'pickle/{h_region}.pickle'), f"FAILED TO WRITE {h_region}"
     return None
 
 
 if __name__ == '__main__':
-    test(0, 91, '01/01/2018', '12/31/2018')
+    scrape(0, 91, '01/01/2018', '12/31/2018')
